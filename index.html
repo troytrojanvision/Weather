@@ -712,7 +712,7 @@
             <label for="wxApiKeyInput">WeatherAPI.com key:</label>
             <input type="password" id="wxApiKeyInput" placeholder="Paste your free API key" autocomplete="off">
             <button id="wxApiKeySave">Save &amp; Load</button>
-            <span class="wxKeyNote">Checks <code>WeatherAPI_Key.js</code> first &middot; if this browser/machine can't reach that, paste a key below (stored only in this browser) &middot; free key at <a href="https://www.weatherapi.com/signup.aspx" target="_blank" rel="noopener">weatherapi.com/signup.aspx</a></span>
+            <span class="wxKeyNote">Checks <code>S:\production work files\Weather Maps and Data\WeatherAPI_Key.js</code> first &middot; if this browser/machine can't reach that, paste a key below (stored only in this browser) &middot; free key at <a href="https://www.weatherapi.com/signup.aspx" target="_blank" rel="noopener">weatherapi.com/signup.aspx</a></span>
           </div>
           <span class="wxChangeKey" id="wxChangeKey" style="display:none;">change API key</span>
 
@@ -796,7 +796,6 @@
   // If neither works, it silently falls back to a saved/manual key.
   const WX_NETWORK_KEY_JS_URL  = 'file:///S:/production%20work%20files/Weather%20Maps%20and%20Data/WeatherAPI_Key.js';
   const WX_NETWORK_KEY_TXT_URL = 'file:///S:/production%20work%20files/Weather%20Maps%20and%20Data/WeatherAPI_Key.txt';
-  const WX_NETWORK_KEY_TXT_URL = 'https://troytrojanvision.github.io/Weather/WeatherAPI_Key.js';
 
   const wxKeyBar   = document.getElementById('wxKeyBar');
   const wxKeyInput = document.getElementById('wxApiKeyInput');
