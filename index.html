@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrojanVision Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#910039;
+    --panel:#0F1626;
+    --panel-2:#0F1626;
+    --line: rgba(255,255,255,0.08);
+    --amber:#F5A623;
+    --amber-dim: rgba(245,166,35,0.15);
+    --chroma:#1E6FBF;
+    --chroma-dim: rgba(30,111,191,0.18);
+    --text:#EDEFF4;
+    --muted:#efd19f;
+    --green:#999999;
+    --display: 'Oswald', Arial, sans-serif;
+    --body: 'Inter', Arial, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --radius: 6px;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(1200px 500px at 15% -10%, rgba(30,111,191,0.16), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(245,166,35,0.08), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    line-height: 1.4;
+    padding-bottom: 60px;
+  }
+
+  a{ color: inherit; }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+  }
+
+  .tally{
+    width: 14px; height:14px; border-radius:50%;
+    background: var(--amber);
+    box-shadow: 0 0 12px 2px rgba(245,166,35,0.65);
+    flex-shrink:0;
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:.45; }
+  }
+
+  .brand{
+    display:flex;
+    flex-direction: column;
+    line-height:1.1;
+  }
+  .brand .kicker{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--amber);
+    text-transform: uppercase;
+  }
+  .brand h1{
+    font-family: var(--display);
+    font-weight:700;
+    font-size: 30px;
+    letter-spacing: 1px;
+    margin: 2px 0 0 0;
+    text-transform: uppercase;
+  }
+
+  .headerRight{
+    margin-left:auto;
+    text-align:right;
+    font-family: var(--mono);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .headerRight #clock{
+    color: var(--text);
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+
+  /* ---------- Layout shell ---------- */
+  main{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  section{ margin-top: 40px; }
+
+  .sectionHead{
+    display:flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .sectionHead .tag{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--bg);
+    background: var(--amber);
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .sectionHead h2{
+    font-family: var(--display);
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin:0;
+    font-weight: 600;
+  }
+  .sectionHead p{
+    margin: 0 0 0 6px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* ---------- Instructions ---------- */
+  .instructions{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display:flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+  .instructions ol{
+    margin:0; padding-left: 18px;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .instructions ol li{ margin: 3px 0; }
+  .instructions strong{ color: var(--amber); }
+
+  /* ---------- Quick links ---------- */
+  .linkGrid{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .linkBtn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    text-decoration:none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    transition: border-color .15s ease, transform .15s ease, background .15s ease;
+  }
+  .linkBtn .dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--chroma);
+    flex-shrink:0;
+  }
+  .linkBtn:hover{
+    border-color: var(--amber);
+    background: var(--amber-dim);
+    transform: translateY(-1px);
+  }
+
+  /* ---------- Map gallery ---------- */
+  .galleryLabel{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 22px 0 10px 0;
+  }
+  .gallery{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+  }
+  figure.mapCard{
+    margin:0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  figure.mapCard:hover{
+    border-color: var(--chroma);
+    transform: translateY(-2px);
+  }
+  figure.mapCard a{ display:block; }
+  figure.mapCard img{
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display:block;
+    background: var(--panel-2);
+  }
+  figure.mapCard figcaption{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    padding: 8px 10px;
+    border-top: 1px solid var(--line);
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+  }
+  figure.mapCard figcaption .open{
+    color: var(--muted);
+    font-size: 11px;
+  }
+  figure.mapCard:hover figcaption .open{ color: var(--amber); }
+
+  /* BMX graphicast images have important text baked in near the edges (esp. upper right) —
+     no rounded corners/clipping on the image itself so nothing gets cut off. */
+  .bmxGallery figure.mapCard{ border-radius: 0; overflow: visible; }
+  .bmxGallery figure.mapCard img{
+    border-radius: 0;
+    height: auto;       /* don't force a fixed box that crops the image */
+    object-fit: contain;
+  }
+  .bmxGallery figure.mapCard figcaption{ border-radius: 0; }
+
+  /* ---------- Tabs for embedded NWS panels ---------- */
+  .tabBar{
+    display:flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0;
+    flex-wrap: wrap;
+  }
+  .tabBtn{
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 16px;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .tabBtn .led{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--muted);
+  }
+  .tabBtn:hover{ color: var(--text); }
+  .tabBtn.active{
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+  }
+  .tabBtn.active .led{
+    background: var(--amber);
+    box-shadow: 0 0 6px 1px rgba(245,166,35,0.7);
+  }
+
+  .panelFrame{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    overflow: hidden;
+  }
+  .frameWrap{
+    display:none;
+    height: 620px;
+    overflow: auto;
+  }
+  .frameWrap.active{ display:block; }
+  .frameWrap iframe{
+    width: 100%;
+    min-width: 900px;
+    height: 1400px;
+    border: 0;
+  }
+  .frameWrap.short iframe{ height: 900px; }
+
+  /* Radar is a live, self-contained app meant to fill whatever window it's given —
+     not a tall page meant to be scrolled — so it gets its own sizing instead of the
+     min-width:900px/height:1400px used for the NWS report pages above. */
+  .frameWrap.fill{ height: 80vh; min-height: 520px; overflow: hidden; }
+  .frameWrap.fill iframe{ width: 100%; height: 100%; min-width: 0; }
+
+  .liveWrap{
+    height: auto;
+    min-height: 200px;
+  }
+  .liveCard{
+    padding: 24px 28px;
+  }
+  .liveHead{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .liveOpen{
+    margin-left:auto;
+    color: var(--amber);
+    text-decoration:none;
+    font-size: 12px;
+  }
+  .liveOpen:hover{ text-decoration: underline; }
+  .wxKeySource{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 2px 6px;
+  }
+  /* ---------- WeatherAPI key bar ---------- */
+  .wxKeyBar{
+    display:flex;
+    flex-wrap: wrap;
+    align-items:center;
+    gap: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    font-size: 13px;
+  }
+  .wxKeyBar label{ color: var(--muted); font-family: var(--mono); font-size: 12px; }
+  .wxKeyBar input{
+    background: #0a0f1a;
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+    min-width: 220px;
+    flex: 1 1 220px;
+  }
+  .wxKeyBar button{
+    background: var(--amber);
+    color: var(--bg);
+    border: none;
+    font-weight: 600;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .wxKeyBar button:hover{ background: #ffb840; }
+  .wxKeyBar .wxKeyNote{
+    color: var(--muted);
+    font-size: 11px;
+    flex-basis: 100%;
+  }
+  .wxKeyBar .wxKeyNote a{ color: var(--chroma); }
+  .wxKeyBar .wxKeyNote code{
+    background: rgba(255,255,255,0.06);
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+  .wxKeyBar.saved{ display:none; }
+  .wxChangeKey{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: underline;
+    cursor: pointer;
+    margin-bottom: 14px;
+    display:inline-block;
+  }
+  .wxChangeKey:hover{ color: var(--amber); }
+
+  .wxStatus{
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    padding: 10px 0;
+  }
+  .wxStatus.error{ color: #ff8a8a; }
+
+  /* ---------- Outlook card ---------- */
+  .wxOutlook{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    align-items:flex-start;
+    background: #fff;
+    color: #1a1a1a;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    max-width: 640px;
+  }
+  .wxNow{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+  }
+  .wxNow img{ width:64px; height:64px; }
+  .wxNow .wxLoc{ font-family: var(--display); font-size: 18px; font-weight:600; text-transform:uppercase; }
+  .wxNow .wxTemp{ font-size: 34px; font-weight:700; font-family: var(--display); }
+  .wxNow .wxCond{ font-size: 14px; color:#444; }
+  .wxNowMeta{
+    font-family: var(--mono);
+    font-size: 12px;
+    color:#444;
+    line-height:1.7;
+  }
+  .wxMini{
+    display:flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    width: 100%;
+    border-top: 1px solid #eee;
+    padding-top: 14px;
+  }
+  .wxMiniDay{
+    text-align:center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color:#333;
+  }
+  .wxMiniDay img{ width:36px; height:36px; display:block; margin: 2px auto; }
+  .wxMiniDay .wxMiniTemp{ font-weight:600; }
+
+  /* ---------- Information grid ---------- */
+  .wxInfoGrid{
+    margin-top: 20px;
+  }
+  .wxInfoGrid h3{
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px 0;
+  }
+  .wxInfoTable{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px 24px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .wxInfoTable div{ display:flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 6px 0; }
+  .wxInfoTable span.k{ color: var(--muted); }
+  .wxInfoTable span.v{ color: var(--text); }
+
+  /* ---------- 10-day table ---------- */
+  .wx10dayWrap{ padding: 20px 24px 28px; }
+  table.wx10day{
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  table.wx10day th, table.wx10day td{
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  table.wx10day th{
+    text-align:left;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  table.wx10day td:first-child, table.wx10day th:first-child{ text-align:left; position:sticky; left:0; background: var(--panel); }
+  table.wx10day img{ width: 30px; height: 30px; vertical-align: middle; }
+  table.wx10day .wxMax{ color: var(--amber); font-weight:600; }
+  table.wx10day .wxMin{ color: var(--chroma); }
+
+  .blockedNotice{
+    height: 100%;
+    display:flex;
+    flex-direction: column;
+    align-items:flex-start;
+    justify-content:center;
+    gap: 14px;
+    padding: 40px;
+  }
+  .blockedTag{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--amber);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .blockedNotice p{
+    margin:0;
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 480px;
+  }
+
+  footer{
+    max-width: 1280px;
+    margin: 50px auto 0 auto;
+    padding: 20px 32px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 640px){
+    header{ padding: 16px 18px; }
+    main{ padding: 0 18px; }
+    .brand h1{ font-size: 22px; }
+    .frameWrap{ height: 480px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tally"></span>
+  <div class="brand">
+    <span class="kicker">On&nbsp;Air&nbsp;Prep</span>
+    <h1>TROY TrojanVision Weather</h1>
+  </div>
+  <div class="headerRight">
+    <div id="clock">--:--</div>
+    <div id="dateLine">&nbsp;</div>
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <div class="instructions">
+      <ol>
+        <li>Choose the image you want to use, then <strong>right-click → Copy Image Location/Address</strong>.</li>
+        <li>Switch to the Google Weather Spreadsheet, select the desired cell, and press <strong>Ctrl+V</strong> to paste.</li>
+        <li>Repeat for each map, then check the <strong>Almanac</strong> and <strong>Around the State</strong> tabs below for text data.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectionHead">
+      <span class="tag">Links</span>
+      <h2>Source Pages</h2>
+      <p>Opens in a new tab</p>
+    </div>
+    <div class="linkGrid">
+      <a class="linkBtn" href="https://docs.google.com/spreadsheets/d/1Ba8pLS-8ikWKaZRQKHAOt1HPQU_-wL_fmTTnuYs7Q2Q/edit?usp=sharing" target="_blank" rel="noopener"><span class="dot"></span>Weather Spreadsheet</a>
+      <a class="linkBtn" href="https://www.weatherapi.com/weather/q/troy-alabama-united-states-of-america-4023110" target="_blank" rel="noopener"><span class="dot"></span>WeatherAPI &middot; Troy</a>
+      <a class="linkBtn" href="http://forecast.weather.gov/MapClick.php?lat=31.8020952&lon=-85.9521694&site=all&smap=1&searchresult=Troy%2C%20AL%2036082%2C%20USA#.V04QsfkrLRb" target="_blank" rel="noopener"><span class="dot"></span>Currents &amp; Forecast</a>
+      <a class="linkBtn" href="http://forecast.weather.gov/data/obhistory/KTOI.html" target="_blank" rel="noopener"><span class="dot"></span>Almanac Info</a>
+      <a class="linkBtn" href="http://forecast.weather.gov/product.php?site=NWS&product=RWR&issuedby=AL" target="_blank" rel="noopener"><span class="dot"></span>Around the State</a>
+      <a class="linkBtn" href="http://www.nhc.noaa.gov/" target="_blank" rel="noopener"><span class="dot"></span>Natl Hurricane Center</a>
+      <a class="linkBtn" href="https://weather.com/weather/monthly/l/36081:4:US" target="_blank" rel="noopener"><span class="dot"></span>Monthly Almanac</a>
+      <a class="linkBtn" href="https://www.weather.gov/bmx/" target="_blank" rel="noopener"><span class="dot"></span>Forecast Maps</a>
+      <a class="linkBtn" href="https://www.spc.noaa.gov/partners/outlooks/state/AL/" target="_blank" rel="noopener"><span class="dot"></span>Storm Prediction</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectionHead">
+      <span class="tag">Maps</span>
+      <h2>Grab &amp; Paste</h2>
+    </div>
+
+    <div class="galleryLabel">Statewide &amp; National Temps</div>
+    <div class="gallery">
+      <figure class="mapCard">
+        <a href="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=CONUS&element=t&n=2" target="_blank" rel="noopener">
+          <img src="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=CONUS&element=t&n=2" alt="US 10am Temps" loading="lazy">
+        </a>
+        <figcaption>US · 10am Temps <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=CONUS&element=t&n=4" target="_blank" rel="noopener">
+          <img src="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=CONUS&element=t&n=4" alt="US 4pm Temps" loading="lazy">
+        </a>
+        <figcaption>US · 4pm Temps <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=ALABAMA&element=t&n=2" target="_blank" rel="noopener">
+          <img src="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=ALABAMA&element=t&n=2" alt="AL 10am Temps" loading="lazy">
+        </a>
+        <figcaption>AL · 10am Temps <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=ALABAMA&element=t&n=4" target="_blank" rel="noopener">
+          <img src="https://graphical.weather.gov/GraphicalNDFD.php?width=515&timezone=CDT&sector=ALABAMA&element=t&n=4" alt="AL 4pm Temps" loading="lazy">
+        </a>
+        <figcaption>AL · 4pm Temps <span class="open">open ↗</span></figcaption>
+      </figure>
+    </div>
+
+    <div class="galleryLabel">BMX graphics - look at the file name and put it into the spreadsheet</div>
+    <div class="gallery bmxGallery">
+      <figure class="mapCard">
+        <a href="https://www.weather.gov/images/bmx/graphicast/1.png" target="_blank" rel="noopener">
+          <img src="https://www.weather.gov/images/bmx/graphicast/1.png" alt="1.PNG" loading="lazy">
+        </a>
+        <figcaption>1.PNG <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://www.weather.gov/images/bmx/graphicast/2.png" target="_blank" rel="noopener">
+          <img src="https://www.weather.gov/images/bmx/graphicast/2.png" alt="2.PNG" loading="lazy">
+        </a>
+        <figcaption>2.PNG <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://www.weather.gov/images/bmx/graphicast/3.png" target="_blank" rel="noopener">
+          <img src="https://www.weather.gov/images/bmx/graphicast/3.png" alt="3.PNG" loading="lazy">
+        </a>
+        <figcaption>3.PNG <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://www.weather.gov/images/bmx/graphicast/4.png" target="_blank" rel="noopener">
+          <img src="https://www.weather.gov/images/bmx/graphicast/4.png" alt="4.PNG" loading="lazy">
+        </a>
+        <figcaption>4.PNG <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://www.weather.gov/images/bmx/graphicast/5.png" target="_blank" rel="noopener">
+          <img src="https://www.weather.gov/images/bmx/graphicast/5.png" alt="5.PNG" loading="lazy">
+        </a>
+        <figcaption>5.PNG <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://www.weather.gov/images/bmx/graphicast/6.png" target="_blank" rel="noopener">
+          <img src="https://www.weather.gov/images/bmx/graphicast/6.png" alt="6.PNG" loading="lazy">
+        </a>
+        <figcaption>6.PNG <span class="open">open ↗</span></figcaption>
+      </figure>
+      <figure class="mapCard">
+        <a href="https://www.weather.gov/images/bmx/graphicast/7.png" target="_blank" rel="noopener">
+          <img src="https://www.weather.gov/images/bmx/graphicast/7.png" alt="7.PNG" loading="lazy">
+        </a>
+        <figcaption>7.PNG <span class="open">open ↗</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectionHead">
+      <span class="tag">Data</span>
+      <h2>Reference Panels</h2>
+      <p>Almanac, statewide products &amp; monthly outlook — for reading off, not pasting</p>
+    </div>
+
+    <div class="tabBar" role="tablist">
+      <button class="tabBtn active" data-target="panel-live"><span class="led"></span>Live Conditions</button>
+      <button class="tabBtn" data-target="panel-currents" id="tabCurrentsBtn"><span class="led"></span>Currents &amp; Forecast</button>
+      <button class="tabBtn" data-target="panel-10day"><span class="led"></span>WeatherAPI 10-Day</button>
+      <button class="tabBtn" data-target="panel-almanac"><span class="led"></span>Almanac</button>
+      <button class="tabBtn" data-target="panel-state"><span class="led"></span>Around the State</button>
+      <button class="tabBtn" data-target="panel-monthly"><span class="led"></span>Monthly Almanac</button>
+      <button class="tabBtn" data-target="panel-radar"><span class="led"></span>TrojanVision Radar</button>
+    </div>
+    <div class="panelFrame">
+      <div class="frameWrap active liveWrap" id="panel-live">
+        <div class="liveCard">
+          <div class="liveHead">
+            <span class="blockedTag" style="background:var(--chroma); color:#fff;">Live</span>
+            <span>WeatherAPI.com &middot; Troy, AL</span>
+            <span id="wxKeySource" class="wxKeySource"></span>
+            <a href="https://www.weatherapi.com/weather/q/troy-2539694" target="_blank" rel="noopener" class="liveOpen">Full forecast ↗</a>
+          </div>
+
+          <div class="wxKeyBar" id="wxKeyBar">
+            <label for="wxApiKeyInput">WeatherAPI.com key:</label>
+            <input type="password" id="wxApiKeyInput" placeholder="Paste your free API key" autocomplete="off">
+            <button id="wxApiKeySave">Save &amp; Load</button>
+            <span class="wxKeyNote">Checks <code>S:\production work files\Weather Maps and Data\WeatherAPI_Key.js</code> first &middot; if this browser/machine can't reach that, paste a key below (stored only in this browser) &middot; free key at <a href="https://www.weatherapi.com/signup.aspx" target="_blank" rel="noopener">weatherapi.com/signup.aspx</a></span>
+          </div>
+          <span class="wxChangeKey" id="wxChangeKey" style="display:none;">change API key</span>
+
+          <div id="wxStatus" class="wxStatus" style="display:none;"></div>
+          <div id="wxOutlook" class="wxOutlook" style="display:none;"></div>
+          <div id="wxInfo" class="wxInfoGrid" style="display:none;"></div>
+        </div>
+      </div>
+      <div class="frameWrap" id="panel-currents">
+        <iframe src="http://forecast.weather.gov/MapClick.php?lat=31.8020952&lon=-85.9521694&site=all&smap=1&searchresult=Troy%2C%20AL%2036082%2C%20USA#.V08BkPkrLRb" loading="lazy"></iframe>
+      </div>
+      <div class="frameWrap liveWrap" id="panel-10day">
+        <div class="wx10dayWrap">
+          <div id="wx10dayStatus" class="wxStatus">Enter your WeatherAPI.com key on the Live Conditions tab to load the 10-day forecast.</div>
+          <div id="wx10day"></div>
+        </div>
+      </div>
+      <div class="frameWrap short" id="panel-almanac">
+        <iframe src="http://forecast.weather.gov/data/obhistory/KTOI.html" loading="lazy"></iframe>
+      </div>
+      <div class="frameWrap" id="panel-state">
+        <iframe src="http://forecast.weather.gov/product.php?site=NWS&product=RWR&issuedby=AL" loading="lazy"></iframe>
+      </div>
+      <div class="frameWrap short" id="panel-monthly">
+        <div class="blockedNotice">
+          <span class="blockedTag">Can't Embed</span>
+          <p>weather.com doesn't allow its pages to be shown inside another site, so this panel can't load inline.</p>
+          <a class="linkBtn" href="https://weather.com/weather/monthly/l/36081:4:US" target="_blank" rel="noopener"><span class="dot"></span>Open Monthly Almanac ↗</a>
+        </div>
+      </div>
+      <div class="frameWrap fill" id="panel-radar">
+        <iframe src="https://tv.bayouradar.com/live/demo/radar?key=MjpkZW1vOnJhZGFyOjE.qfzEAGPZOXKOgDaHv0I6jTcOSYPctGjZUxdO7vCGUHQ" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  TrojanVision Weather Ops · maps refresh from graphical.weather.gov &amp; weather.gov on load · built for the anchor desk
+</footer>
+
+<script>
+  // Clock
+  function tick(){
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
+    const date = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    document.getElementById('clock').textContent = time;
+    document.getElementById('dateLine').textContent = date;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Tabs
+  document.querySelectorAll('.tabBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabBtn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.frameWrap').forEach(f => f.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+    });
+  });
+
+  // ---------- WeatherAPI.com data (Outlook, Information, 10-Day Forecast) ----------
+  const WX_LS_KEY = 'trojanvision_weatherapi_key';
+  const WX_LOCATION = 'Troy,AL';
+  const WX_REFRESH_MS = 15 * 60 * 1000; // 15 minutes
+
+  // Shared network key file (checked first, on every load/refresh, so IT only has
+  // to update one file on the S: drive instead of every machine).
+  //
+  // Two methods are tried, in order:
+  //  1) A <script> tag pointing at a .js file on the share that sets
+  //     window.WX_NETWORK_KEY = "...". Script tags aren't subject to the CORS
+  //     rules that block fetch()/XHR from reading another file:// resource, so
+  //     this is the one most likely to actually work when this page is opened
+  //     directly as a local file.
+  //  2) A plain fetch()/XHR read of a .txt file, kept as a second attempt in case
+  //     a particular machine/browser is configured to allow it.
+  // If neither works, it silently falls back to a saved/manual key.
+  const WX_NETWORK_KEY_JS_URL  = 'file:///S:/production%20work%20files/Weather%20Maps%20and%20Data/WeatherAPI_Key.js';
+  const WX_NETWORK_KEY_TXT_URL = 'file:///S:/production%20work%20files/Weather%20Maps%20and%20Data/WeatherAPI_Key.txt';
+
+  const wxKeyBar   = document.getElementById('wxKeyBar');
+  const wxKeyInput = document.getElementById('wxApiKeyInput');
+  const wxKeySave  = document.getElementById('wxApiKeySave');
+  const wxChangeKey= document.getElementById('wxChangeKey');
+  const wxStatusEl = document.getElementById('wxStatus');
+  const wxOutlookEl= document.getElementById('wxOutlook');
+  const wxInfoEl   = document.getElementById('wxInfo');
+  const wx10dayStatusEl = document.getElementById('wx10dayStatus');
+  const wx10dayEl  = document.getElementById('wx10day');
+  const wxKeySourceEl = document.getElementById('wxKeySource');
+
+  function wxGetKey(){ return (localStorage.getItem(WX_LS_KEY) || '').trim(); }
+  function wxSetKey(k){ localStorage.setItem(WX_LS_KEY, k.trim()); }
+
+  // Method 1: load WeatherAPI_Key.js via a <script> tag and read the global it sets.
+  // Not blocked by the file:// CORS restriction that stops fetch()/XHR — the browser
+  // just executes whatever JS the file contains, no cross-origin "read" involved.
+  function wxFetchNetworkKeyViaScript(){
+    return new Promise(resolve => {
+      window.WX_NETWORK_KEY = undefined; // clear any stale value from a prior attempt
+      const el = document.createElement('script');
+      el.src = WX_NETWORK_KEY_JS_URL;
+      let settled = false;
+      const finish = (val) => {
+        if(settled) return;
+        settled = true;
+        el.remove();
+        resolve(val);
+      };
+      el.onload  = () => finish((window.WX_NETWORK_KEY || '').trim() || null);
+      el.onerror = () => finish(null);
+      // Some browsers neither fire onload nor onerror for a blocked/missing
+      // file:// script — don't hang forever waiting on it.
+      setTimeout(() => finish((window.WX_NETWORK_KEY || '').trim() || null), 2500);
+      document.head.appendChild(el);
+    });
+  }
+
+  // Method 2: plain fetch()/XHR read of a .txt file on the same share.
+  async function wxFetchNetworkKeyViaText(){
+    try{
+      const res = await fetch(WX_NETWORK_KEY_TXT_URL, { cache: 'no-store' });
+      if(res.ok){
+        const txt = (await res.text()).trim();
+        if(txt) return txt;
+      }
+    } catch(e){
+      // Most browsers refuse fetch() on file:// URLs outright — fall through to XHR.
+    }
+    return new Promise(resolve => {
+      try{
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', WX_NETWORK_KEY_TXT_URL, true);
+        xhr.onload = () => {
+          const ok = xhr.status === 0 || xhr.status === 200; // status 0 is normal for file://
+          const txt = ok ? (xhr.responseText || '').trim() : '';
+          resolve(txt || null);
+        };
+        xhr.onerror = () => resolve(null);
+        xhr.send();
+      } catch(e){
+        resolve(null);
+      }
+    });
+  }
+
+  // Resolve the key to use: network .js, then network .txt, then a saved/manual browser key.
+  async function wxResolveKey(){
+    const scriptKey = await wxFetchNetworkKeyViaScript();
+    if(scriptKey) return { key: scriptKey, source: 'network' };
+    const txtKey = await wxFetchNetworkKeyViaText();
+    if(txtKey) return { key: txtKey, source: 'network' };
+    const lsKey = wxGetKey();
+    if(lsKey) return { key: lsKey, source: 'browser' };
+    return { key: null, source: null };
+  }
+
+  function wxShowKeyBar(show){
+    wxKeyBar.classList.toggle('saved', !show);
+    wxChangeKey.style.display = show ? 'none' : 'inline-block';
+  }
+
+  function wxSetStatus(el, msg, isError){
+    el.style.display = msg ? 'block' : 'none';
+    el.textContent = msg || '';
+    el.classList.toggle('error', !!isError);
+  }
+
+  function wxFmtTime(t){
+    // WeatherAPI returns times like "06:04 AM" already formatted
+    return t;
+  }
+
+  function wxRenderOutlook(data){
+    const loc = data.location;
+    const cur = data.current;
+    const days = data.forecast.forecastday;
+    let miniHtml = days.map(d => {
+      const dt = new Date(d.date + 'T12:00:00');
+      const label = dt.toLocaleDateString('en-US', { weekday: 'short' });
+      return `<div class="wxMiniDay">
+        <div>${label}</div>
+        <img src="https:${d.day.condition.icon}" alt="${d.day.condition.text}">
+        <div class="wxMiniTemp">${Math.round(d.day.maxtemp_f)}° / ${Math.round(d.day.mintemp_f)}°</div>
+      </div>`;
+    }).join('');
+
+    wxOutlookEl.innerHTML = `
+      <div class="wxNow">
+        <img src="https:${cur.condition.icon}" alt="${cur.condition.text}">
+        <div>
+          <div class="wxLoc">${loc.name}</div>
+          <div class="wxTemp">${Math.round(cur.temp_f)}&deg;F</div>
+          <div class="wxCond">${cur.condition.text}</div>
+        </div>
+      </div>
+      <div class="wxNowMeta">
+        Wind: ${Math.round(cur.wind_mph)} mph ${cur.wind_dir}<br>
+        Feels like: ${Math.round(cur.feelslike_f)}&deg;F<br>
+        Humidity: ${cur.humidity}%<br>
+        Pressure: ${cur.pressure_in} in<br>
+        Precip: ${cur.precip_in} in
+      </div>
+      <div class="wxMini">${miniHtml}</div>
+    `;
+    wxOutlookEl.style.display = 'flex';
+  }
+
+  function wxRenderInfo(data){
+    const loc = data.location;
+    const astro = data.forecast.forecastday[0].astro;
+    const rows = [
+      ['Country', loc.country],
+      ['Region', loc.region],
+      ['Lat/Lon', `${loc.lat}, ${loc.lon}`],
+      ['Local time', loc.localtime.split(' ')[1] || loc.localtime],
+      ['Time Zone ID', loc.tz_id],
+      ['Sunrise', astro.sunrise],
+      ['Sunset', astro.sunset],
+      ['Moon Phase', astro.moon_phase],
+    ];
+    wxInfoEl.innerHTML = `
+      <h3>Information</h3>
+      <div class="wxInfoTable">
+        ${rows.map(([k,v]) => `<div><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
+      </div>
+    `;
+    wxInfoEl.style.display = 'block';
+  }
+
+  function wxRenderTenDay(data){
+    const days = data.forecast.forecastday;
+    const cols = days.map(d => {
+      const dt = new Date(d.date + 'T12:00:00');
+      return dt.toLocaleDateString('en-US', { weekday: 'short', month:'numeric', day:'numeric' });
+    });
+
+    function row(label, fn){
+      return `<tr><th>${label}</th>${days.map(fn).join('')}</tr>`;
+    }
+
+    const html = `
+      <table class="wx10day">
+        <thead>
+          <tr><th>&nbsp;</th>${cols.map(c => `<th>${c}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          <tr><td>Weather</td>${days.map(d => `<td><img src="https:${d.day.condition.icon}" alt="${d.day.condition.text}" title="${d.day.condition.text}"></td>`).join('')}</tr>
+          <tr><td>Max</td>${days.map(d => `<td class="wxMax">${Math.round(d.day.maxtemp_f)}&deg;F</td>`).join('')}</tr>
+          <tr><td>Min</td>${days.map(d => `<td class="wxMin">${Math.round(d.day.mintemp_f)}&deg;F</td>`).join('')}</tr>
+          <tr><td>Wind</td>${days.map(d => `<td>${Math.round(d.day.maxwind_mph)} mph</td>`).join('')}</tr>
+          <tr><td>Precip</td>${days.map(d => `<td>${d.day.totalprecip_in} in</td>`).join('')}</tr>
+          <tr><td>Chance Rain</td>${days.map(d => `<td>${d.day.daily_chance_of_rain}%</td>`).join('')}</tr>
+          <tr><td>Humidity</td>${days.map(d => `<td>${d.day.avghumidity}%</td>`).join('')}</tr>
+          <tr><td>Sunrise</td>${days.map(d => `<td>${d.astro.sunrise}</td>`).join('')}</tr>
+          <tr><td>Sunset</td>${days.map(d => `<td>${d.astro.sunset}</td>`).join('')}</tr>
+          <tr><td>Moon Phase</td>${days.map(d => `<td>${d.astro.moon_phase}</td>`).join('')}</tr>
+          <tr><td>UV Index</td>${days.map(d => `<td>${d.day.uv}</td>`).join('')}</tr>
+        </tbody>
+      </table>
+    `;
+    wx10dayEl.innerHTML = html;
+    wxSetStatus(wx10dayStatusEl, '');
+  }
+
+  async function wxLoadData(){
+    if(wxKeySourceEl){ wxKeySourceEl.textContent = 'checking S: drive…'; }
+    const { key, source } = await wxResolveKey();
+    if(!key){
+      wxShowKeyBar(true);
+      wxSetStatus(wxStatusEl, '');
+      wxOutlookEl.style.display = 'none';
+      wxInfoEl.style.display = 'none';
+      wxSetStatus(wx10dayStatusEl, "Couldn't find a key on the S: drive and none is saved here — enter your WeatherAPI.com key on the Live Conditions tab to load the 10-day forecast.");
+      wx10dayEl.innerHTML = '';
+      if(wxKeySourceEl){ wxKeySourceEl.textContent = ''; }
+      return;
+    }
+    wxShowKeyBar(false);
+    if(wxKeySourceEl){
+      wxKeySourceEl.textContent = source === 'network'
+        ? 'key: S: drive'
+        : 'key: this browser';
+    }
+    wxSetStatus(wxStatusEl, 'Loading live data from WeatherAPI.com…');
+    wxSetStatus(wx10dayStatusEl, 'Loading 10-day forecast…');
+
+    try{
+      const url = `https://api.weatherapi.com/v1/forecast.json?key=${encodeURIComponent(key)}&q=${encodeURIComponent(WX_LOCATION)}&days=10&aqi=no&alerts=no`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if(!res.ok || data.error){
+        const msg = (data && data.error && data.error.message) ? data.error.message : `Request failed (${res.status})`;
+        throw new Error(msg);
+      }
+      wxSetStatus(wxStatusEl, '');
+      wxRenderOutlook(data);
+      wxRenderInfo(data);
+      wxRenderTenDay(data);
+    } catch(err){
+      wxSetStatus(wxStatusEl, 'Could not load WeatherAPI.com data: ' + err.message, true);
+      wxSetStatus(wx10dayStatusEl, 'Could not load 10-day forecast: ' + err.message, true);
+      wxOutlookEl.style.display = 'none';
+      wxInfoEl.style.display = 'none';
+      wx10dayEl.innerHTML = '';
+      // Bad/expired key - let them re-enter it
+      wxShowKeyBar(true);
+    }
+  }
+
+  wxKeySave.addEventListener('click', () => {
+    const v = wxKeyInput.value.trim();
+    if(!v) return;
+    wxSetKey(v);
+    wxLoadData();
+  });
+  wxKeyInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') wxKeySave.click();
+  });
+  wxChangeKey.addEventListener('click', () => {
+    wxKeyInput.value = wxGetKey();
+    wxShowKeyBar(true);
+  });
+
+  wxLoadData();
+  setInterval(wxLoadData, WX_REFRESH_MS);
+</script>
+
+</body>
+</html>
